@@ -36,6 +36,23 @@ class MyGame < GameWindow
   end
 
   def update
+    Mouse.update
+
+    if Mouse.button_down? :left
+
+      @lojas.each do |loja|
+        # deseleciona azulejos clicados anteriormente
+        loja.azulejos.each do |azulejo|
+          azulejo.unclicked
+        end
+        # seleciona azulejos da mesma cor
+        loja.azulejos.each do |azulejo|
+          if Mouse.x >= azulejo.asset.x && Mouse.x <= azulejo.asset.x + azulejo.width && Mouse.y >= azulejo.asset.y && Mouse.y <= azulejo.asset.y + azulejo.height
+            azulejo.clicked(loja)
+          end
+        end
+      end
+    end
     # KB.update
     #
     # v = Vector.new(0, 0)
@@ -60,7 +77,7 @@ class MyGame < GameWindow
     end
 
 
-    
+
     # @img.draw @x, @y, 0
     # # binding.pry
     # @sprite.draw
@@ -84,8 +101,6 @@ class Loja
     @height = 120
     @azulejos = azulejos
     @asset = Sprite.new(x, y, :fabrica)
-    # create_azulejos
-    # show_azulejos
   end
 
   def show_azulejos
@@ -95,7 +110,10 @@ class Loja
       azulejo[1].asset.x = (x + 70)
       azulejo[1].asset.y = (y + 25) + (50 * i)
 
-      azulejo.each { |azu| azu.asset.draw }
+      azulejo.each do |azu|
+        azu.asset.draw
+        azu.highlight_clicked.draw if azu.clicked?
+      end
     end
   end
 
@@ -113,18 +131,39 @@ class Loja
 end
 
 class Azulejo
-  attr_accessor :asset, :width, :height, :color
+  attr_accessor :asset, :width, :height, :color, :clicked
 
   def initialize(x, y, color)
+    @clicked = false
     @color = color
     @width = 25
     @height = 25
-    @asset = Sprite.new(x, y, asset_name)
+    @asset = Sprite.new(x, y, asset_name(color))
   end
 
-  def asset_name
-    string = "azulejo_" + color
+  def asset_name(type)
+    string = "azulejo_" + type
     string.to_sym
+  end
+
+  def clicked(loja = nil)
+    @clicked = true
+    loja.azulejos.each do |azu|
+      azu.clicked if azu.color == @color
+    end if loja
+  end
+
+  def unclicked
+    @clicked = false
+  end
+  def clicked?
+    @clicked
+  end
+
+  def highlight_clicked
+    if clicked?
+      Sprite.new(asset.x, asset.y, asset_name("clicked"))
+    end
   end
 end
 

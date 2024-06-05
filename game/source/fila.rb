@@ -7,11 +7,11 @@ class Fila
     @number = number
     @actual_color = ""
     @azulejos = []
-    @x = x
-    @y = y
-    @width = 126
-    @height = 25
     @asset = Sprite.new(x, y, :fila)
+    @x = asset.x
+    @y = asset.y
+    @width = asset.img.first.width
+    @height = asset.img.first.height
   end
 
   def add_azulejos(selected_azulejos, jogador)
@@ -51,5 +51,9 @@ class Fila
         jogador.chao_jogador.azulejos << azu
       end
     end
+  end
+
+  def rectangle
+    Rectangle.new(asset.x, asset.y, width, height)
   end
 end

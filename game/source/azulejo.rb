@@ -1,14 +1,16 @@
 # frozen_string_literal: true
 
 class Azulejo
-  attr_accessor :asset, :width, :height, :color, :clicked
+  attr_accessor :x, :y, :asset, :width, :height, :color, :clicked
 
   def initialize(x, y, color)
     @clicked = false
     @color = color
-    @width = 25
-    @height = 25
     @asset = Sprite.new(x, y, asset_name(color))
+    @x = asset.x
+    @y = asset.y
+    @width = asset.img.first.width
+    @height = asset.img.first.height
   end
 
   def asset_name(type)
@@ -34,5 +36,9 @@ class Azulejo
     if clicked?
       Sprite.new(asset.x, asset.y, asset_name("clicked"))
     end
+  end
+
+  def rectangle
+    Rectangle.new(asset.x, asset.y, width, height)
   end
 end

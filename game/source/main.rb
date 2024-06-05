@@ -8,14 +8,13 @@ require_relative 'jogador'
 require_relative 'saco'
 require_relative 'azulejo'
 require_relative 'loja'
+require_relative 'wrappers/mouse_wrapper'
 
-# class Main
-# end
-
-class MyGame < GameWindow
+class Main < GameWindow
   def initialize
     super 1600, 800, false
     self.caption = 'Azul da UFF'
+
     @saco = Saco.new.call
     @lojas = [
       Loja.new(300, 10, @saco.shift(4)),
@@ -26,44 +25,56 @@ class MyGame < GameWindow
     ]
     @chao = Chao.new
     @jogador = ::Jogador.new("tuco", 1)
+
+    @last_time = Gosu.milliseconds
+    @frame_count = 0
+    @fps = 0
   end
 
   def update
     Mouse.update
+    mouse_wrapper = MouseWrapper.new(Mouse)
+    if Mouse.x <= 800
+      @disposal_azulejos = @lojas.map { |loja| loja.azulejos }.flatten
+      @hovered_loja = mouse_wrapper.over_any?(@lojas)
+    end
 
     if Mouse.button_down? :left
+      # deseleciona azulejos clicados anteriormente
+      @disposal_azulejos.each do |azulejo|
+        azulejo.unclicked unless Mouse.x >= 800
+      end
 
-      @lojas.each do |loja|
-        # deseleciona azulejos clicados anteriormente
-        loja.azulejos.each do |azulejo|
-          azulejo.unclicked unless Mouse.x >= 800
-        end
-        # seleciona azulejos da mesma cor
-        loja.azulejos.each do |azulejo|
-          if Mouse.x >= azulejo.asset.x && Mouse.x <= azulejo.asset.x + azulejo.width && Mouse.y >= azulejo.asset.y && Mouse.y <= azulejo.asset.y + azulejo.height
-            azulejo.clicked(loja)
+      # seleciona azulejos da mesma cor
+      if @hovered_loja
+        @hovered_loja.azulejos.each do |azulejo|
+          if Mouse.over? azulejo.rectangle
+            azulejo.clicked(@hovered_loja)
+            @clicked_loja = @hovered_loja
           end
         end
       end
 
-      @lojas.each do |loja|
-        @jogador.filas.each do |fila|
-          if Mouse.x >= fila.asset.x && Mouse.x <= fila.asset.x + fila.width && Mouse.y >= fila.asset.y && Mouse.y <= fila.asset.y + fila.height
-            selected_azulejos = loja.selected.compact
-            if selected_azulejos.any?
-              # adiciona os azulejos selecionados a fila do jogador
-              fila.add_azulejos(selected_azulejos, @jogador)
+      if Mouse.x >= 800
+        @hovered_fila = mouse_wrapper.over_any?(@jogador.filas)
 
-              azulejos = loja.azulejos - selected_azulejos
-              azulejos.each do |azu|
-                @chao.azulejos << azu
-              end
+        if @hovered_fila
+          selected_azulejos = @clicked_loja.selected.compact
 
-              # derruba no chao do jogador os azulejos que nao couberem na fila
-              fila.drop_azulejos(@jogador)
+          if selected_azulejos.any?
 
-              loja.azulejos = []
+            # adiciona os azulejos selecionados a fila do jogador
+            @hovered_fila.add_azulejos(selected_azulejos, @jogador)
+
+            azulejos = @clicked_loja.azulejos - selected_azulejos
+            azulejos.each do |azu|
+              @chao.azulejos << azu
             end
+
+            # derruba no chao do jogador os azulejos que nao couberem na fila
+            @hovered_fila.drop_azulejos(@jogador)
+
+            @clicked_loja.azulejos = []
           end
         end
       end
@@ -77,6 +88,17 @@ class MyGame < GameWindow
   def draw_mouse_coordinates
     Gosu::Font.new(20).draw_text("Mouse X: #{Mouse.x}, Mouse Y: #{Mouse.y}", 10, 10, 1, 1, 1, Gosu::Color::WHITE)
   end
+
+  def draw_fps
+    if (Gosu.milliseconds - @last_time) >= 1000
+      @fps = @frame_count * 1000 / (Gosu.milliseconds - @last_time)
+      @frame_count = 0
+      @last_time = Gosu.milliseconds
+    end
+    @frame_count += 1
+    Gosu::Font.new(20).draw_text("FPS: #{@fps}", 10, 50, 1, 1, 1, Gosu::Color::WHITE)
+  end
+
   def draw
     clear 0xffabcdef
     @lojas.each do |loja|
@@ -92,7 +114,8 @@ class MyGame < GameWindow
     @jogador.draw_chao
 
     draw_mouse_coordinates
+    draw_fps
   end
 end
 
-MyGame.new.show
+Main.new.show

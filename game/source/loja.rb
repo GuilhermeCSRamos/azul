@@ -5,12 +5,12 @@ class Loja
 
   def initialize(x, y, azulejos)
     @slots = [[1, 2], [3, 4]]
-    @x = x
-    @y = y
-    @width = 120
-    @height = 120
-    @azulejos = azulejos
     @asset = Sprite.new(x, y, :fabrica)
+    @x = asset.x
+    @y = asset.y
+    @width = asset.img.first.width
+    @height = asset.img.first.height
+    @azulejos = azulejos
   end
 
   def show_azulejos
@@ -43,5 +43,9 @@ class Loja
     azulejos.map do |azulejo|
       azulejo if azulejo.clicked?
     end
+  end
+
+  def rectangle
+    Rectangle.new(asset.x, asset.y, width, height)
   end
 end

@@ -13,4 +13,8 @@ class MouseWrapper
 
     nil
   end
+
+  def mouse_clicked?(rectangle)
+    mouse.button_down?(:left).eql?(1) && mouse.over?(rectangle)
+  end
 end

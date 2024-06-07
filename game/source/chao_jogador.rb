@@ -14,10 +14,15 @@ class ChaoJogador < Chao
     @asset = Sprite.new(x, y, :chaojogador)
   end
 
+  def position_azulejos
+    azulejos.map.with_index do |azulejo, i|
+      azulejo.asset.x = asset.x + (25 * i)
+      azulejo.asset.y = asset.y + 5
+    end
+  end
+
   def show_azulejos
     azulejos.map.with_index do |azulejo, i|
-      azulejo.asset.x = x + (25 * i)
-      azulejo.asset.y = y + 5
       azulejo.asset.draw
     end
   end

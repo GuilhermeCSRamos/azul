@@ -11,19 +11,22 @@ class Loja
     @width = asset.img.first.width
     @height = asset.img.first.height
     @azulejos = azulejos
+    position_azulejo
   end
 
-  def show_azulejos
+  def position_azulejo
     azulejos.each_slice(2).with_index do |azulejo, i|
       azulejo[0].asset.x = (x + 25)
       azulejo[0].asset.y = (y + 25) + (50 * i)
       azulejo[1].asset.x = (x + 70)
       azulejo[1].asset.y = (y + 25) + (50 * i)
+    end
+  end
 
-      azulejo.each do |azu|
-        azu.asset.draw
-        azu.highlight_clicked.draw if azu.clicked?
-      end
+  def show_azulejos
+    azulejos.each do |azu|
+      azu.asset.draw
+      azu.highlight_clicked.draw if azu.clicked?
     end
   end
 

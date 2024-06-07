@@ -7,11 +7,16 @@ class Fila
     @number = number
     @actual_color = ""
     @azulejos = []
-    @asset = Sprite.new(x, y, :fila)
+    @asset = Sprite.new(x, y, asset_name(number))
     @x = asset.x
     @y = asset.y
     @width = asset.img.first.width
     @height = asset.img.first.height
+  end
+
+  def asset_name(type)
+    string = "fila" + type.to_s
+    string.to_sym
   end
 
   def add_azulejos(selected_azulejos, jogador)
@@ -35,12 +40,18 @@ class Fila
       @azulejos = selected_azulejos
       @actual_color = selected_azulejos.first.color
     end
+
+    position_azulejos
   end
 
+  def position_azulejos
+    azulejos.map.with_index do |azulejo, i|
+      azulejo.asset.x = asset.x + (25 * i)
+      azulejo.asset.y = asset.y
+    end
+  end
   def show_azulejos
     azulejos.map.with_index do |azulejo, i|
-      azulejo.asset.x = x + (25 * i)
-      azulejo.asset.y = y
       azulejo.asset.draw
     end
   end
@@ -50,6 +61,7 @@ class Fila
       azulejos.pop(azulejos.size - number).each do |azu|
         jogador.chao_jogador.azulejos << azu
       end
+      jogador.chao_jogador.position_azulejos
     end
   end
 

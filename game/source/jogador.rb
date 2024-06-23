@@ -36,5 +36,6 @@ class Jogador
 
   def draw_mosaico
     @mosaico.asset.draw
+    @mosaico.show_azulejos
   end
 end

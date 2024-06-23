@@ -20,12 +20,20 @@ class Fila
   end
 
   def add_azulejos(selected_azulejos, jogador)
+    selected_azulejos.each do |ea|
+      if ea.color == "token"
+        jogador.chao_jogador.azulejos << ea
+        selected_azulejos = selected_azulejos - [ea]
+        break
+      end
+    end
+
     if @azulejos.empty?
       # se a fila estiver vazia, deve acrescentar os azulejos e definir a cor atual da fila
       @azulejos = selected_azulejos
-      @actual_color = selected_azulejos.first.color
+      @actual_color = selected_azulejos.last.color
 
-    elsif @actual_color == selected_azulejos.first.color
+    elsif @actual_color == selected_azulejos.last.color
       # se a fila já tiver azulejos da mesma cor, acrescentar
       selected_azulejos.each do |azulejo|
         @azulejos << azulejo
@@ -38,7 +46,7 @@ class Fila
       end
 
       @azulejos = selected_azulejos
-      @actual_color = selected_azulejos.first.color
+      @actual_color = selected_azulejos.last.color
     end
 
     position_azulejos
@@ -61,8 +69,8 @@ class Fila
       azulejos.pop(azulejos.size - number).each do |azu|
         jogador.chao_jogador.azulejos << azu
       end
-      jogador.chao_jogador.position_azulejos
     end
+    jogador.chao_jogador.position_azulejos
   end
 
   def rectangle

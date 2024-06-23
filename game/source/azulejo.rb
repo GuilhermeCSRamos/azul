@@ -21,13 +21,14 @@ class Azulejo
   def clicked(loja = nil)
     @clicked = true
     loja.azulejos.each do |azu|
-      azu.clicked if azu.color == @color
+      azu.clicked if azu.color == @color || azu.color == "token"
     end if loja
   end
 
-  def unclicked
+  def unclick!
     @clicked = false
   end
+
   def clicked?
     @clicked
   end

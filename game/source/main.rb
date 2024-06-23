@@ -12,8 +12,9 @@ require_relative 'jogo'
 require_relative 'menu'
 require_relative 'wrappers/mouse_wrapper'
 
-$option = 1
-$players = 4
+$option = 0
+$players = 2
+$caixa = []
 
 Menu.new.show if $option == 0
 

@@ -12,10 +12,14 @@ require_relative 'loja'
 require_relative 'wrappers/mouse_wrapper'
 
 class Jogo < GameWindow
+  attr_accessor :state
+
   def initialize
     super 1600, 800, false
     self.caption = 'Azul da UFF'
 
+    # :menu, :store, :queue, :mosaic, :score
+    @state = :store
     @saco = Saco.new.call
     @lojas = [
       Loja.new(300, 10, @saco.shift(4)),
@@ -24,7 +28,19 @@ class Jogo < GameWindow
       Loja.new(600, 300, @saco.shift(4)),
       Loja.new(460, 600, @saco.shift(4))
     ]
+
+    @lojas << [Loja.new(60, 90, @saco.shift(4)),
+               Loja.new(550, 90, @saco.shift(4))] if $players >= 3
+    @lojas << [Loja.new(30, 500, @saco.shift(4)),
+               Loja.new(580, 500, @saco.shift(4))] if $players >= 4
+
+    @lojas.flatten!
+
     @chao = Chao.new
+    @selected_azulejos = []
+    @clicked_loja = nil
+    @hovered_fila = nil
+    @clicked_chao = nil
     @jogadores = (1..$players).map { |n| ::Jogador.new("tuco" + n.to_s, n) }
     @jogador = @jogadores.first
 
@@ -36,54 +52,87 @@ class Jogo < GameWindow
   end
 
   def update
+    puts state
     Mouse.update
     mouse_wrapper = MouseWrapper.new(Mouse)
-    if Mouse.x <= 800
-      @disposal_azulejos = @lojas.map { |loja| loja.azulejos }.flatten
-      @hovered_loja = mouse_wrapper.over_any?(@lojas)
-    end
 
-    if Mouse.button_down? :left
-      # deseleciona azulejos clicados anteriormente
-      @disposal_azulejos.each do |azulejo|
-        azulejo.unclicked unless Mouse.x >= 800
+    if state == :store
+      @disposal_azulejos = @lojas.map { |loja| loja.azulejos }.flatten
+      @all_azulejos = [@disposal_azulejos + @chao.azulejos].flatten
+      @hovered_loja = mouse_wrapper.over_any?(@lojas)
+      @hovered_fila = mouse_wrapper.over_any?(@jogador.filas)
+      @hovered_chao = @chao if Mouse.over?(@chao.rectangle)
+
+      if @disposal_azulejos.size.zero? && @chao.azulejos.size.zero?
+        @state = :mosaic
       end
 
-      # seleciona azulejos da mesma cor
-      if @hovered_loja
-        @hovered_loja.azulejos.each do |azulejo|
-          if Mouse.over? azulejo.rectangle
-            azulejo.clicked(@hovered_loja)
-            @clicked_loja = @hovered_loja
+      if Mouse.button_pressed? :left
+        if @hovered_fila && (@clicked_loja || @clicked_chao)
+          @state = :queue
+        end
+
+        # deseleciona azulejos clicados anteriormente
+        @all_azulejos.each do |azulejo|
+          azulejo.unclick! unless @hovered_fila
+          @clicked_loja = nil unless @hovered_fila
+          @clicked_chao = nil unless @hovered_fila
+        end
+
+        # seleciona azulejos da mesma cor
+        if @hovered_loja
+          @hovered_loja.azulejos.each do |azulejo|
+            if Mouse.over? azulejo.rectangle
+              azulejo.clicked(@hovered_loja)
+              @clicked_loja = @hovered_loja
+            end
+          end
+        elsif @hovered_chao
+          @chao.azulejos.each do |azulejo|
+            if Mouse.over? azulejo.rectangle
+              azulejo.clicked(@chao)
+              @clicked_chao = @hovered_chao
+            end
           end
         end
       end
 
-      if Mouse.x >= 800
-        @hovered_fila = mouse_wrapper.over_any?(@jogador.filas)
+    elsif state == :queue
+      if @hovered_fila
 
-        if @hovered_fila
-          selected_azulejos = @clicked_loja.selected.compact
+        selected_azulejos = @clicked_loja&.selected&.compact || @chao.selected.compact
+        if selected_azulejos.any?
+          # adiciona os azulejos selecionados a fila do jogador
+          @hovered_fila.add_azulejos(selected_azulejos, @jogador)
 
-          if selected_azulejos.any?
-
-            # adiciona os azulejos selecionados a fila do jogador
-            @hovered_fila.add_azulejos(selected_azulejos, @jogador)
-
+          if @clicked_loja
+            # derruba os azulejos restantes na loja
             azulejos = @clicked_loja.azulejos - selected_azulejos
             azulejos.each do |azu|
               @chao.azulejos << azu
             end
-
-            # derruba no chao do jogador os azulejos que nao couberem na fila
-            @hovered_fila.drop_azulejos(@jogador)
-
             @clicked_loja.azulejos = []
-            next_player
+          elsif @clicked_chao
+            @chao.azulejos = @chao.azulejos - selected_azulejos
           end
+
+          @chao.position_azulejo
+
+          # derruba no chao do jogador os azulejos que nao couberem na fila
+          @hovered_fila.drop_azulejos(@jogador)
+
+          next_player
         end
       end
+    elsif state == :mosaic
+      # montagem do mosaico
+      @jogadores.each do |jogador|
+        jogador.mosaico.montagem(jogador)
+      end
 
+      @state = :score
+    elsif state == :score
+      binding.pry
     end
   end
 
@@ -119,12 +168,13 @@ class Jogo < GameWindow
     @chao.asset.draw
     @chao.show_azulejos
 
-    draw_mouse_coordinates
-    draw_fps
+    # draw_mouse_coordinates
+    # draw_fps
   end
 
   def next_player
     @jogador = @jogadores[@jogador.number] ? @jogadores[@jogador.number] : @jogadores[0]
+    @state = :store
   end
 
 

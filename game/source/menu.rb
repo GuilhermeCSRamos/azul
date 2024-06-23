@@ -20,6 +20,8 @@ class Menu < GameWindow
     @um = Sprite.new(600, 150, :botao_um)
     @dois = Sprite.new(650, 150, :botao_dois)
     @tres = Sprite.new(700, 150, :botao_tres)
+    @quatro = Sprite.new(750, 150, :botao_quatro)
+    @selected = Sprite.new(650, 150, :botao_selected)
   end
 
   def update
@@ -35,12 +37,28 @@ class Menu < GameWindow
       exit
     end
 
-    if mouse_wrapper.mouse_clicked?(rectangle(@um))
-      $players = 1
-    end
+    # if mouse_wrapper.mouse_clicked?(rectangle(@um))
+    #   $players = 1
+    #   @selected.x = @um.x
+    #   @selected.y = @um.y
+    # end
 
     if mouse_wrapper.mouse_clicked?(rectangle(@dois))
       $players = 2
+      @selected.x = @dois.x
+      @selected.y = @dois.y
+    end
+
+    if mouse_wrapper.mouse_clicked?(rectangle(@tres))
+      $players = 3
+      @selected.x = @tres.x
+      @selected.y = @tres.y
+    end
+
+    if mouse_wrapper.mouse_clicked?(rectangle(@quatro))
+      $players = 4
+      @selected.x = @quatro.x
+      @selected.y = @quatro.y
     end
   end
 
@@ -53,9 +71,11 @@ class Menu < GameWindow
 
     @play.draw
     @sair.draw
-    @um.draw
+    # @um.draw
     @dois.draw
     @tres.draw
+    @quatro.draw
+    @selected.draw
   end
 
   def rectangle(asset)

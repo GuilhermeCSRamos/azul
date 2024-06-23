@@ -22,7 +22,7 @@ class ChaoJogador < Chao
   end
 
   def show_azulejos
-    azulejos.map.with_index do |azulejo, i|
+    azulejos.map do |azulejo|
       azulejo.asset.draw
     end
   end

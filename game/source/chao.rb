@@ -14,8 +14,10 @@ class Chao
 
   def position_azulejos
     azulejos.map.with_index do |azulejo, i|
-      azulejo.asset.x = x + (25 * i)
-      azulejo.asset.y = y
+      x_index = i % 9
+      y_index = i / 9
+      azulejo.asset.x = x + (40 * x_index)
+      azulejo.asset.y = y + (40 * y_index)
     end
   end
 

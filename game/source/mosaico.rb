@@ -21,6 +21,14 @@ class Mosaico
     @score = 0
   end
 
+  def end_game?
+    azulejos_matrix.each do |row|
+      return true unless row.include?(false)
+    end
+
+    false
+  end
+
   def mosaico_hash
     [
       {azul: [0, 0], amarelo: [0, 1], vermelho: [0, 2], preto: [0, 3], branco: [0, 4]},
@@ -55,7 +63,7 @@ class Mosaico
     end
   end
 
-  def score
+  def score(state)
     mosaico = azulejos_matrix
     tamanho = mosaico.size
     pontuacao = 0
@@ -99,32 +107,35 @@ class Mosaico
       end
     end
 
-    # Pontuação por linhas completas
-    pontuacao += 2 * mosaico.count { |linha| linha.all? }
+    if state == :end_game
 
-    # Pontuação por colunas completas
-    (0...tamanho).each do |j|
-      completa = true
-      (0...tamanho).each do |i|
-        unless mosaico[i][j]
-          completa = false
-          break
+      # Pontuação por linhas completas
+      pontuacao += 2 * mosaico.count { |linha| linha.all? }
+
+      # Pontuação por colunas completas
+      (0...tamanho).each do |j|
+        completa = true
+        (0...tamanho).each do |i|
+          unless mosaico[i][j]
+            completa = false
+            break
+          end
+        end
+        pontuacao += 7 if completa
+      end
+
+      # Pontuação por todas as cores
+      cores_completas = Hash.new(0)
+      mosaico.each do |linha|
+        linha.each do |tile|
+          cores_completas[tile] += 1 if tile
         end
       end
-      pontuacao += 7 if completa
-    end
-
-    # Pontuação por todas as cores (assumindo que as cores são representadas em diferentes arrays booleanos)
-    cores_completas = Hash.new(0)
-    mosaico.each do |linha|
-      linha.each do |tile|
-        cores_completas[tile] += 1 if tile
+      cores_completas.each_value do |contagem|
+        pontuacao += 10 if contagem == 5
       end
-    end
-    cores_completas.each_value do |contagem|
-      pontuacao += 10 if contagem == 5
-    end
 
+    end
     pontuacao
   end
 

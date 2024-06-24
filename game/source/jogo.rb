@@ -18,7 +18,7 @@ class Jogo < GameWindow
     super 1600, 800, false
     self.caption = 'Azul da UFF'
 
-    # :menu, :store, :queue, :mosaic, :score, :restart
+    # :menu, :store, :queue, :mosaic, :score, :restart, :end_game
     @state = :store
     @saco = Saco.new.call
     @lojas = [
@@ -132,20 +132,32 @@ class Jogo < GameWindow
       @state = :score
     elsif state == :score
       @jogadores.each do |jogador|
-        jogador.score = jogador.mosaico.score - jogador.chao_jogador.score
+        #verifica se há vitória
+        @state = :end_game if jogador.mosaico.end_game?
+
+        jogador.score = jogador.mosaico.score(state) - jogador.chao_jogador.score
+        jogador.score = 0 if jogador.score.negative?
       end
-      @state = :restart
+
+      @state = :restart unless state == :end_game
     elsif state == :restart
       @jogadores.each do |jogador|
         token, jogador.chao_jogador.azulejos = jogador.chao_jogador.azulejos.partition { |ea| ea.color == "token" }
+        # jogador com token será o primeiro da prox rodada
+        @jogador = jogador if token
         @chao.azulejos << token
         @chao.azulejos.flatten!.compact!
 
         @chao.position_azulejos
         jogador.chao_jogador.position_azulejos
 
-        $caixa << jogador.chao_jogador.azulejos.shift(10)
+        $caixa << jogador.chao_jogador.azulejos.shift(jogador.chao_jogador.azulejos.size)
         $caixa.flatten!
+      end
+
+      if (@saco.size < 20 && $players == 2) || (@saco.size < 28 && $players == 3) || (@saco.size < 36 && $players == 4)
+        @saco << $caixa.shift($caixa.size)
+        @saco.flatten!
       end
 
       @lojas = [
@@ -155,22 +167,37 @@ class Jogo < GameWindow
         Loja.new(600, 300, @saco.shift(4)),
         Loja.new(460, 600, @saco.shift(4))
       ]
-      puts "caixa: " + $caixa.size.to_s
-      print $caixa.map(&:color)
-      puts
-      puts "saco: " + @saco.size.to_s
-      puts "chao: "
-      print @chao.azulejos.map(&:color)
-      puts
-      puts "chao jogador 1"
-      print @jogadores.first.chao_jogador.azulejos.map(&:color)
-      puts
-      puts "chao jogador 2"
-      print @jogadores.last.chao_jogador.azulejos.map(&:color)
-      puts
+
+      @lojas << [Loja.new(60, 90, @saco.shift(4)),
+                 Loja.new(550, 90, @saco.shift(4))] if $players >= 3
+      @lojas << [Loja.new(30, 500, @saco.shift(4)),
+                 Loja.new(580, 500, @saco.shift(4))] if $players >= 4
+
+
+
+
+
+      # puts "caixa: " + $caixa.size.to_s
+      # print $caixa.map(&:color)
+      # puts
+      # puts "saco: " + @saco.size.to_s
+      # puts "chao: "
+      # print @chao.azulejos.map(&:color)
+      # puts
+      # puts "chao jogador 1"
+      # print @jogadores.first.chao_jogador.azulejos.map(&:color)
+      # puts
+      # puts "chao jogador 2"
+      # print @jogadores.last.chao_jogador.azulejos.map(&:color)
+      # puts
 
 
       @state = :store
+
+    elsif state == :end_game
+      # binding.pry
+
+
     end
   end
 

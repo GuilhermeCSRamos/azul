@@ -16,10 +16,14 @@ class Loja
 
   def position_azulejos
     azulejos.each_slice(2).with_index do |azulejo, i|
-      azulejo[0].asset.x = (x + 25)
-      azulejo[0].asset.y = (y + 25) + (50 * i)
-      azulejo[1].asset.x = (x + 70)
-      azulejo[1].asset.y = (y + 25) + (50 * i)
+      if azulejo[0]
+        azulejo[0].asset.x = (x + 25)
+        azulejo[0].asset.y = (y + 25) + (50 * i)
+      end
+      if azulejo[1]
+        azulejo[1].asset.x = (x + 70)
+        azulejo[1].asset.y = (y + 25) + (50 * i)
+      end
     end
   end
 

@@ -29,6 +29,6 @@ class ChaoJogador < Chao
   end
 
   def score
-    @score_map[azulejos.size]
+    @score_map[azulejos.size] || 14
   end
 end

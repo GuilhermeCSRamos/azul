@@ -7,7 +7,7 @@ require_relative 'helper/position_helper'
 include Helper
 
 class Jogador
-  attr_accessor :filas, :chao_jogador, :mosaico, :number, :score
+  attr_accessor :filas, :chao_jogador, :mosaico, :number, :score, :nome
   def initialize(nome, number)
     @nome = nome
     @number = number

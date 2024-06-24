@@ -41,8 +41,9 @@ class Jogo < GameWindow
     @clicked_loja = nil
     @hovered_fila = nil
     @clicked_chao = nil
-    @jogadores = (1..$players).map { |n| ::Jogador.new("tuco" + n.to_s, n) }
+    @jogadores = (1..$players).map { |n| ::Jogador.new("Player " + n.to_s, n) }
     @jogador = @jogadores.first
+    @winner = nil
 
     @last_time = Gosu.milliseconds
     @frame_count = 0
@@ -144,7 +145,7 @@ class Jogo < GameWindow
       @jogadores.each do |jogador|
         token, jogador.chao_jogador.azulejos = jogador.chao_jogador.azulejos.partition { |ea| ea.color == "token" }
         # jogador com token será o primeiro da prox rodada
-        @jogador = jogador if token
+        @jogador = jogador if token.any?
         @chao.azulejos << token
         @chao.azulejos.flatten!.compact!
 
@@ -173,31 +174,9 @@ class Jogo < GameWindow
       @lojas << [Loja.new(30, 500, @saco.shift(4)),
                  Loja.new(580, 500, @saco.shift(4))] if $players >= 4
 
-
-
-
-
-      # puts "caixa: " + $caixa.size.to_s
-      # print $caixa.map(&:color)
-      # puts
-      # puts "saco: " + @saco.size.to_s
-      # puts "chao: "
-      # print @chao.azulejos.map(&:color)
-      # puts
-      # puts "chao jogador 1"
-      # print @jogadores.first.chao_jogador.azulejos.map(&:color)
-      # puts
-      # puts "chao jogador 2"
-      # print @jogadores.last.chao_jogador.azulejos.map(&:color)
-      # puts
-
-
       @state = :store
-
     elsif state == :end_game
-      # binding.pry
-
-
+      @winner = @jogadores.sort_by { |jogador| jogador.score }.last
     end
   end
 
@@ -234,6 +213,8 @@ class Jogo < GameWindow
     @chao.asset.draw
     @chao.show_azulejos
 
+    draw_winner if state == :end_game && @winner
+
     # draw_mouse_coordinates
     # draw_fps
   end
@@ -243,6 +224,9 @@ class Jogo < GameWindow
     @state = :store
   end
 
+  def draw_winner
+    Gosu::Font.new(60).draw_text("VENCEDOR: #{@winner&.nome}", 600, 20, 1, 1, 1, Gosu::Color::BLACK)
+  end
 
   def players_position_boards
     # array = [{ filas: @filas, mosaico: @mosaico, chao_jogador: @chao_jogador }]

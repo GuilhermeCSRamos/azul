@@ -29,7 +29,8 @@ class Menu < GameWindow
     mouse_wrapper = MouseWrapper.new(Mouse)
 
     if mouse_wrapper.mouse_clicked?(rectangle(@play)) && $players.positive?
-      jogo.state = :store
+      Jogo.new(:store).show
+      exit
       # $option = 1
       # self.close
     end

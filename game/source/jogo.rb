@@ -14,12 +14,12 @@ require_relative 'wrappers/mouse_wrapper'
 class Jogo < GameWindow
   attr_accessor :state
 
-  def initialize
+  def initialize(state = :menu)
     super 1600, 800, false
     self.caption = 'Azul da UFF'
 
     # :menu, :store, :queue, :mosaic, :score, :restart, :end_game
-    @state = :menu
+    @state = state
     @saco = Saco.new.call
     @lojas = [
       Loja.new(300, 10, @saco.shift(4)),
@@ -45,6 +45,7 @@ class Jogo < GameWindow
     @jogador = @jogadores.first
     @winner = nil
     @menu = Menu.new
+    @back = Sprite.new(1300, 700, :botao_back)
 
     @last_time = Gosu.milliseconds
     @frame_count = 0
@@ -56,6 +57,10 @@ class Jogo < GameWindow
   def update
     Mouse.update
     mouse_wrapper = MouseWrapper.new(Mouse)
+    if mouse_wrapper.mouse_clicked?(rectangle(@back))
+      @state = :menu
+    end
+
     if state == :menu
       @menu.update(self)
     elsif state == :store
@@ -218,6 +223,7 @@ class Jogo < GameWindow
 
       @chao.asset.draw
       @chao.show_azulejos
+      @back.draw
 
       draw_winner if state == :end_game && @winner
 
@@ -246,5 +252,9 @@ class Jogo < GameWindow
       }
     end
     position_boards(array, 800, 200, 200, 2)
+  end
+
+  def rectangle(asset)
+    Rectangle.new(asset.x, asset.y, asset.img.first.width, asset.img.first.height)
   end
 end

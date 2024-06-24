@@ -19,7 +19,7 @@ class Jogo < GameWindow
     self.caption = 'Azul da UFF'
 
     # :menu, :store, :queue, :mosaic, :score, :restart, :end_game
-    @state = :store
+    @state = :menu
     @saco = Saco.new.call
     @lojas = [
       Loja.new(300, 10, @saco.shift(4)),
@@ -44,6 +44,7 @@ class Jogo < GameWindow
     @jogadores = (1..$players).map { |n| ::Jogador.new("Player " + n.to_s, n) }
     @jogador = @jogadores.first
     @winner = nil
+    @menu = Menu.new
 
     @last_time = Gosu.milliseconds
     @frame_count = 0
@@ -55,8 +56,9 @@ class Jogo < GameWindow
   def update
     Mouse.update
     mouse_wrapper = MouseWrapper.new(Mouse)
-
-    if state == :store
+    if state == :menu
+      @menu.update(self)
+    elsif state == :store
       @disposal_azulejos = @lojas.map { |loja| loja.azulejos }.flatten
       @all_azulejos = [@disposal_azulejos + @chao.azulejos].flatten
       @hovered_loja = mouse_wrapper.over_any?(@lojas)
@@ -200,24 +202,30 @@ class Jogo < GameWindow
 
   def draw
     clear 0xffabcdef
-    @lojas.each do |loja|
-      loja.asset.draw
-      loja.show_azulejos
+
+    if state == :menu
+      @menu.draw
+    else
+      @lojas.each do |loja|
+        loja.asset.draw
+        loja.show_azulejos
+      end
+
+      @jogadores.map(&:draw_filas)
+      @jogadores.map(&:draw_mosaico)
+      @jogadores.map(&:draw_chao)
+      @jogadores.map(&:draw_score)
+
+      @chao.asset.draw
+      @chao.show_azulejos
+
+      draw_winner if state == :end_game && @winner
+
+      # draw_mouse_coordinates
+      # draw_fps
     end
-
-    @jogadores.map(&:draw_filas)
-    @jogadores.map(&:draw_mosaico)
-    @jogadores.map(&:draw_chao)
-    @jogadores.map(&:draw_score)
-
-    @chao.asset.draw
-    @chao.show_azulejos
-
-    draw_winner if state == :end_game && @winner
-
-    # draw_mouse_coordinates
-    # draw_fps
   end
+
 
   def next_player
     @jogador = @jogadores[@jogador.number] ? @jogadores[@jogador.number] : @jogadores[0]

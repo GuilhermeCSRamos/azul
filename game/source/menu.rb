@@ -12,8 +12,8 @@ require_relative 'wrappers/mouse_wrapper'
 
 class Menu < GameWindow
   def initialize
-    super 1600, 800, false
-    self.caption = 'Azul da UFF'
+    # super 1600, 800, false
+    # self.caption = 'Azul da UFF'
 
     @play = Sprite.new(600, 180, :botao_play)
     @sair = Sprite.new(600, 280, :botao_sair)
@@ -24,13 +24,14 @@ class Menu < GameWindow
     @selected = Sprite.new(650, 150, :botao_selected)
   end
 
-  def update
-    Mouse.update
+  def update(jogo)
+    # Mouse.update
     mouse_wrapper = MouseWrapper.new(Mouse)
 
     if mouse_wrapper.mouse_clicked?(rectangle(@play)) && $players.positive?
-      $option = 1
-      self.close
+      jogo.state = :store
+      # $option = 1
+      # self.close
     end
 
     if mouse_wrapper.mouse_clicked?(rectangle(@sair))
@@ -67,8 +68,6 @@ class Menu < GameWindow
   end
 
   def draw
-    clear 0xffabcdef
-
     @play.draw
     @sair.draw
     # @um.draw

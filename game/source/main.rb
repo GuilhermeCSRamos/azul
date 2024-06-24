@@ -16,6 +16,6 @@ $option = 1
 $players = 2
 $caixa = []
 
-Menu.new.show if $option == 0
+# Menu.new.show if $option == 0
 
 Jogo.new.show if $option == 1

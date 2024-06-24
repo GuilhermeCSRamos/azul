@@ -7,8 +7,8 @@ class Chao
     @azulejos = [Azulejo.new(180, 180, "token")]
     @x = 180
     @y = 180
-    @width = 126
-    @height = 25
+    @width = 370
+    @height = 370
     @asset = Sprite.new(x, y, :chao)
   end
 
@@ -21,7 +21,6 @@ class Chao
 
   def show_azulejos
     azulejos.map.with_index do |azulejo, i|
-      binding.pry if azulejo.nil?
       azulejo.asset.draw
       azulejo.highlight_clicked.draw if azulejo.clicked?
     end

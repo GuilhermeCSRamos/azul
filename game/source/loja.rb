@@ -11,10 +11,10 @@ class Loja
     @width = asset.img.first.width
     @height = asset.img.first.height
     @azulejos = azulejos
-    position_azulejo
+    position_azulejos
   end
 
-  def position_azulejo
+  def position_azulejos
     azulejos.each_slice(2).with_index do |azulejo, i|
       azulejo[0].asset.x = (x + 25)
       azulejo[0].asset.y = (y + 25) + (50 * i)

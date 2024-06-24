@@ -12,7 +12,7 @@ class Chao
     @asset = Sprite.new(x, y, :chao)
   end
 
-  def position_azulejo
+  def position_azulejos
     azulejos.map.with_index do |azulejo, i|
       azulejo.asset.x = x + (25 * i)
       azulejo.asset.y = y
@@ -21,6 +21,7 @@ class Chao
 
   def show_azulejos
     azulejos.map.with_index do |azulejo, i|
+      binding.pry if azulejo.nil?
       azulejo.asset.draw
       azulejo.highlight_clicked.draw if azulejo.clicked?
     end

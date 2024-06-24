@@ -12,7 +12,7 @@ require_relative 'jogo'
 require_relative 'menu'
 require_relative 'wrappers/mouse_wrapper'
 
-$option = 0
+$option = 1
 $players = 2
 $caixa = []
 

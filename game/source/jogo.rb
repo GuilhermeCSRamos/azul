@@ -18,7 +18,7 @@ class Jogo < GameWindow
     super 1600, 800, false
     self.caption = 'Azul da UFF'
 
-    # :menu, :store, :queue, :mosaic, :score
+    # :menu, :store, :queue, :mosaic, :score, :restart
     @state = :store
     @saco = Saco.new.call
     @lojas = [
@@ -52,7 +52,6 @@ class Jogo < GameWindow
   end
 
   def update
-    puts state
     Mouse.update
     mouse_wrapper = MouseWrapper.new(Mouse)
 
@@ -116,7 +115,7 @@ class Jogo < GameWindow
             @chao.azulejos = @chao.azulejos - selected_azulejos
           end
 
-          @chao.position_azulejo
+          @chao.position_azulejos
 
           # derruba no chao do jogador os azulejos que nao couberem na fila
           @hovered_fila.drop_azulejos(@jogador)
@@ -132,7 +131,46 @@ class Jogo < GameWindow
 
       @state = :score
     elsif state == :score
-      binding.pry
+      @jogadores.each do |jogador|
+        jogador.score = jogador.mosaico.score - jogador.chao_jogador.score
+      end
+      @state = :restart
+    elsif state == :restart
+      @jogadores.each do |jogador|
+        token, jogador.chao_jogador.azulejos = jogador.chao_jogador.azulejos.partition { |ea| ea.color == "token" }
+        @chao.azulejos << token
+        @chao.azulejos.flatten!.compact!
+
+        @chao.position_azulejos
+        jogador.chao_jogador.position_azulejos
+
+        $caixa << jogador.chao_jogador.azulejos.shift(10)
+        $caixa.flatten!
+      end
+
+      @lojas = [
+        Loja.new(300, 10, @saco.shift(4)),
+        Loja.new(10, 300, @saco.shift(4)),
+        Loja.new(130, 600, @saco.shift(4)),
+        Loja.new(600, 300, @saco.shift(4)),
+        Loja.new(460, 600, @saco.shift(4))
+      ]
+      puts "caixa: " + $caixa.size.to_s
+      print $caixa.map(&:color)
+      puts
+      puts "saco: " + @saco.size.to_s
+      puts "chao: "
+      print @chao.azulejos.map(&:color)
+      puts
+      puts "chao jogador 1"
+      print @jogadores.first.chao_jogador.azulejos.map(&:color)
+      puts
+      puts "chao jogador 2"
+      print @jogadores.last.chao_jogador.azulejos.map(&:color)
+      puts
+
+
+      @state = :store
     end
   end
 
@@ -164,6 +202,7 @@ class Jogo < GameWindow
     @jogadores.map(&:draw_filas)
     @jogadores.map(&:draw_mosaico)
     @jogadores.map(&:draw_chao)
+    @jogadores.map(&:draw_score)
 
     @chao.asset.draw
     @chao.show_azulejos
